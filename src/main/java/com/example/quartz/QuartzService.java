@@ -16,6 +16,8 @@ import java.util.Map;
 public class QuartzService {
     private final Scheduler scheduler;
 
+    public static final String JOB_NAME = "JOB_NAME";
+
     public void addSimpleJob(Class job, String name, String desc, Map params, Integer seconds) throws SchedulerException {
         JobDetail jobDetail = buildJobDetail(job, name, desc, params);
 
@@ -42,9 +44,15 @@ public class QuartzService {
         );
     }
 
-    private JobDetail buildJobDetail(Class job, String name, String desc, Map params) {
+    private <T extends Job> JobDetail buildJobDetail(Class<? extends Job> job, String name, String desc, Map params) {
         JobDataMap jobDataMap = new JobDataMap();
         if(params != null) jobDataMap.putAll(params);
+        jobDataMap.put(JOB_NAME, name);
+        jobDataMap.put("executeCount", 1);
+
+        log.info("{} - {}", job, name);
+
+
         return JobBuilder
                 .newJob(job)
                 .withIdentity(name)
